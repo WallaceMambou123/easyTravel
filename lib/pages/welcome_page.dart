@@ -1,3 +1,4 @@
+// Bienvenue dans ta WelcomePage avec animation dynamique
 import 'package:flutter/material.dart';
 import 'package:easytravel/pages/login_modal.dart';
 
@@ -9,16 +10,17 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin {
-  late AnimationController _contentController;
-  late Animation<Offset> _titleAnimation;
+  late AnimationController _contentController; // Contrôleur pour animer le logo + texte
+  late Animation<Offset> _titleAnimation; // Animation pour faire glisser le titre vers le haut
 
-  late AnimationController _backgroundController;
-  late Animation<double> _heightAnimation;
+  late AnimationController _backgroundController; // Contrôleur pour animer la hauteur de l'image de fond
+  late Animation<double> _heightAnimation; // Animation de la hauteur de l'image de fond
 
   @override
   void initState() {
     super.initState();
 
+    // Initialise l'animation du contenu (logo + texte)
     _contentController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -26,20 +28,22 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
 
     _titleAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0, -0.3),
+      end: const Offset(0, -0.3), // glissement vers le haut
     ).animate(CurvedAnimation(
       parent: _contentController,
       curve: Curves.easeOut,
     ));
 
+    // Initialise l'animation de l'image de fond qui se réduit
     _backgroundController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
 
+    // Réduction de l'image jusqu'à une hauteur de 500px
     _heightAnimation = Tween<double>(
-      begin: 1.0, // 100% height
-      end: 300 / MediaQueryData.fromWindow(WidgetsBinding.instance.window).size.height,
+      begin: 1.0,
+      end: 500 / MediaQueryData.fromWindow(WidgetsBinding.instance.window).size.height,
     ).animate(CurvedAnimation(
       parent: _backgroundController,
       curve: Curves.easeOut,
@@ -48,15 +52,18 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
 
   @override
   void dispose() {
+    // Nettoyage des contrôleurs
     _contentController.dispose();
     _backgroundController.dispose();
     super.dispose();
   }
 
   void _onStartPressed() {
+    // Lance les animations
     _contentController.forward();
     _backgroundController.forward();
 
+    // Ouvre la fenêtre modale de login
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -72,10 +79,16 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
             parent: anim1,
             curve: Curves.easeOut,
           )),
-          child: const LoginModal(),
+          // Augmentation de la hauteur de la modale à 80% de l'écran
+          child: FractionallySizedBox(
+            heightFactor: 0.65,
+            alignment: Alignment.bottomCenter,
+            child: const LoginModal(),
+          ),
         );
       },
     ).then((_) {
+      // Réinitialisation des animations après fermeture de la modale
       _contentController.reverse();
       _backgroundController.reverse();
     });
@@ -93,7 +106,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
 
           return Stack(
             children: [
-              // Image de fond qui se rétrécit
+              // Image de fond animée
               SizedBox(
                 width: size.width,
                 height: bgHeight,
@@ -103,29 +116,36 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                 ),
               ),
 
-              // Le reste de l'écran devient bleu foncé
+              // Fond bleu foncé qui occupe le reste de l'écran
               Positioned(
                 top: bgHeight,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(color: const Color(0xFF0C2A4B)),
+                left: 50,
+                right: 100,
+                bottom: 100,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Couleur de fond
+                    borderRadius: BorderRadius.circular(20), // Coins arrondis)//Color(0xFF0C2A4B)),
+
+                  ),
+
+                ),
               ),
 
-              // Contenu avec animation
+              // Contenu animé : logo + texte + bouton
               SafeArea(
                 child: SlideTransition(
                   position: _titleAnimation,
                   child: Column(
                     children: [
-                      const Spacer(flex: 2),
+                      const Spacer(flex: 3),
 
                       Image.asset(
-                        'src/assets/images/iconBus.jpg',
-                        width: 90,
-                        height: 90,
+                        'src/assets/images/iconBusVrai.png',
+                        width: 200,
+                        height: 190,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 10),
 
                       const Text(
                         'EasyTravel',
@@ -164,7 +184,7 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
                         ),
                       ),
 
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),

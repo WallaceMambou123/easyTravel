@@ -1,10 +1,11 @@
+import 'package:easytravel/pages/registre_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 // Import des pages
 import 'package:easytravel/pages/login_page.dart';
-import 'package:easytravel/pages/register_page.dart';
+import 'package:easytravel/pages/registre_modal.dart';
 import 'package:easytravel/pages/dashboard_page.dart';
 import 'package:easytravel/pages/welcome_page.dart';
 
@@ -34,9 +35,10 @@ class EasyTravelApp extends StatelessWidget {
       routes: {
         '/welcome': (context) => const WelcomePage(),
         '/login': (context) => const LoginPage(),
-        '/register': (context) => const RegisterPage(),
+        '/register': (context) => const RegisterModal(),
         '/dashboard': (context) => const DashboardPage(),
         '/forgot-password': (context) => const DummyForgotPasswordPage(),
+
       },
     );
   }
