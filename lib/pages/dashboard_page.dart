@@ -7,6 +7,8 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName ?? "Utilisateur";
+    final email = user?.email ?? "Email inconnu";
 
     return Scaffold(
       appBar: AppBar(
@@ -15,8 +17,31 @@ class DashboardPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
+              final shouldLogout = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Confirmation"),
+                  content: const Text("Voulez-vous vraiment vous déconnecter ?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("Non"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text("Oui"),
+                    ),
+                  ],
+                ),
+              );
+
+              if (shouldLogout == true) {
+                await FirebaseAuth.instance.signOut();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, '/welcome', (route) => false);
+                }
+              }
             },
           )
         ],
@@ -26,8 +51,13 @@ class DashboardPage extends StatelessWidget {
         child: ListView(
           children: [
             Text(
-              "Bienvenue, ${user?.email ?? 'utilisateur inconnu'} 👋",
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              "Bienvenue, $displayName 👋",
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              email,
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
             const SizedBox(height: 24),
             const Text(

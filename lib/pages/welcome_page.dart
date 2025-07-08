@@ -1,4 +1,5 @@
 // Bienvenue dans ta WelcomePage avec animation dynamique
+import 'package:easytravel/pages/auth_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:easytravel/pages/login_modal.dart';
 
@@ -81,9 +82,9 @@ class _WelcomePageState extends State<WelcomePage> with TickerProviderStateMixin
           )),
           // Augmentation de la hauteur de la modale à 80% de l'écran
           child: FractionallySizedBox(
-            heightFactor: 0.65,
+            heightFactor: 0.8, // Augmentez cette valeur pour rendre la modale plus grande
             alignment: Alignment.bottomCenter,
-            child: const LoginModal(),
+              child: const AuthModal(),
           ),
         );
       },

@@ -1,11 +1,10 @@
-import 'package:easytravel/pages/forget_password.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginModal extends StatelessWidget {
-  final VoidCallback onSwitchToRegister;
+class RegisterModal extends StatelessWidget {
+  final VoidCallback onSwitchToLogin;
 
-  const LoginModal({super.key, required this.onSwitchToRegister});
+  const RegisterModal({super.key, required this.onSwitchToLogin});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +20,7 @@ class LoginModal extends StatelessWidget {
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: _LoginFormStyled(onSwitch: onSwitchToRegister),
+            child: _RegisterFormStyled(onSwitch: onSwitchToLogin),
           ),
         ),
       ],
@@ -29,34 +28,42 @@ class LoginModal extends StatelessWidget {
   }
 }
 
-class _LoginFormStyled extends StatefulWidget {
+class _RegisterFormStyled extends StatefulWidget {
   final VoidCallback onSwitch;
 
-  const _LoginFormStyled({super.key, required this.onSwitch});
+  const _RegisterFormStyled({super.key, required this.onSwitch});
 
   @override
-  State<_LoginFormStyled> createState() => _LoginFormStyledState();
+  State<_RegisterFormStyled> createState() => _RegisterFormStyledState();
 }
 
-class _LoginFormStyledState extends State<_LoginFormStyled> {
+class _RegisterFormStyledState extends State<_RegisterFormStyled> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   bool _isLoading = false;
   String? _error;
   bool _obscureText = true;
 
-  Future<void> _login() async {
+  Future<void> _register() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (password != confirmPassword) {
+      setState(() => _error = "Passwords do not match.");
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
-
       final userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       final user = userCredential.user;
       if (user != null && mounted) {
@@ -64,13 +71,9 @@ class _LoginFormStyledState extends State<_LoginFormStyled> {
         Navigator.pushReplacementNamed(context, '/dashboard');
       }
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        _error = e.message;
-      });
+      setState(() => _error = e.message);
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -98,7 +101,7 @@ class _LoginFormStyledState extends State<_LoginFormStyled> {
           child: Column(
             children: [
               Text(
-                "Login",
+                "Register",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -107,7 +110,7 @@ class _LoginFormStyledState extends State<_LoginFormStyled> {
               ),
               SizedBox(height: 4),
               Text(
-                "Easy travel is the most popular\nbus ticket booking app",
+                "Create your Easy Travel account\nto book tickets with ease",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.black54, fontSize: 14),
               ),
@@ -116,7 +119,7 @@ class _LoginFormStyledState extends State<_LoginFormStyled> {
         ),
         const SizedBox(height: 24),
 
-        Text("Email or Phone number", style: _labelStyle),
+        Text("Email", style: _labelStyle),
         const SizedBox(height: 6),
         TextField(
           controller: _emailController,
@@ -137,55 +140,27 @@ class _LoginFormStyledState extends State<_LoginFormStyled> {
               icon: Icon(
                 _obscureText ? Icons.visibility_off : Icons.visibility,
               ),
-              onPressed: () {
-                setState(() => _obscureText = !_obscureText);
-              },
+              onPressed: () => setState(() => _obscureText = !_obscureText),
             ),
           ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Text("Confirm Password", style: _labelStyle),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _confirmPasswordController,
+          obscureText: _obscureText,
+          decoration: _fieldDecoration(""),
         ),
 
         const SizedBox(height: 8),
 
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-    onPressed: () {
-    showGeneralDialog(
-    context: context,
-    barrierDismissible: true,
-    barrierLabel: "Mot de passe oublié",
-    transitionDuration: const Duration(milliseconds: 500),
-    pageBuilder: (_, __, ___) => const SizedBox.shrink(),
-    transitionBuilder: (context, anim1, anim2, _) {
-    return SlideTransition(
-    position: Tween<Offset>(
-    begin: const Offset(0, 1),
-    end: Offset.zero,
-    ).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOut)),
-    child: FractionallySizedBox(
-    heightFactor: 0.8,
-    alignment: Alignment.bottomCenter,
-    child: const ForgotPasswordModal(),
-    ),
-    );
-    },
-    );
-    },
-
-            child: const Text(
-              "Forgot password ?",
-              style: TextStyle(color: Color(0xFF0C2A4B)),
-            ),
-          ),
-        ),
-
         if (_error != null)
-          Text(
-            _error!,
-            style: const TextStyle(color: Colors.red),
-            textAlign: TextAlign.center,
-          ),
-
+          Text(_error!,
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center),
         const SizedBox(height: 8),
 
         _isLoading
@@ -193,7 +168,7 @@ class _LoginFormStyledState extends State<_LoginFormStyled> {
             : SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _login,
+            onPressed: _register,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0C2A4B),
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -202,7 +177,7 @@ class _LoginFormStyledState extends State<_LoginFormStyled> {
               ),
             ),
             child: const Text(
-              "Login",
+              "Register",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ),
@@ -213,18 +188,19 @@ class _LoginFormStyledState extends State<_LoginFormStyled> {
         Center(
           child: Wrap(
             children: [
-              const Text("Don't have account ? "),
-              GestureDetector(
-                onTap: widget.onSwitch,
-                child: const Text(
-                  "Register",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0C2A4B),
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ),
+              const Text("Already have an account ? \n"),
+    GestureDetector(
+    onTap: widget.onSwitch,
+    child: const Text(
+    "Login",
+    style: TextStyle(
+    fontWeight: FontWeight.bold,
+    color: Color(0xFF0C2A4B), // même couleur que le reste de l'UI
+    decoration: TextDecoration.none,
+    ),
+    ),
+    ),
+
             ],
           ),
         ),
